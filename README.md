@@ -1,0 +1,39 @@
+# YARP Payment Gateway & Settlement Switch
+
+An enterprise-grade, high-performance Payment Gateway and Settlement Switch built with **.NET 10** and **YARP (Yet Another Reverse Proxy)**. This distributed architecture simulates a highly concurrent payment processing environment, featuring dynamic BIN routing, Luhn validation, external provider integration (Iyzico), and inter-service settlement mechanics.
+
+## 🏗 Architecture Overview
+
+The system operates as a reverse proxy that intercepts payment requests, inspects the payload, and dynamically routes traffic to the appropriate banking microservice based on the Bank Identification Number (BIN) and network rules.
+
+- **PaymentGateway.Yarp (Port 5000):** The core routing engine. Implements Rate Limiting, Idempotency checks, Luhn Algorithm validation, and dynamic header injection (`X-Target-Bank`).
+- **Garanti.API (Port 5001):** Acquirer microservice integrated with the official **Iyzico .NET SDK** for external live/sandbox processing.
+- **Akbank.API (Port 5002):** Acquirer microservice and internal **Merchant Ledger / Settlement Engine**.
+- **Ziraat.API (Port 5003):** Fallback Acquirer microservice.
+
+## 🚀 Key Enterprise Features
+
+* **Dynamic BIN Routing:** Inspects the first 6 digits of the PAN to route traffic to the correct acquiring bank cluster without client awareness.
+* **Idempotency & Rate Limiting:** Prevents duplicate charges via concurrent dictionary caching and protects against volumetric attacks (500 req/sec limit).
+* **PCI-DSS Compliance Simulation:** Implements PAN masking in application logs and responses.
+* **Automated Settlement:** Deducts POS commission and automatically dispatches the net payout via HTTP to the merchant's target IBAN ledger.
+
+## 🛠 Tech Stack
+- **Framework:** .NET 10 (ASP.NET Core Web API)
+- **Proxy:** Microsoft YARP (Reverse Proxy)
+- **Integration:** Iyzico Official SDK (`Iyzipay`)
+- **CI/CD:** GitHub Actions
+
+## 🚦 How to Run
+
+1. Clone the repository.
+2. Update `src/Services/Garanti.API/appsettings.json` with your Iyzico Sandbox API keys if external routing is desired.
+3. Build and run all microservices concurrently:
+
+```bash
+dotnet build
+# Start services in separate terminal instances:
+dotnet run --project src/Gateway/PaymentGateway.Yarp/PaymentGateway.Yarp.csproj
+dotnet run --project src/Services/Garanti.API/Garanti.API.csproj
+dotnet run --project src/Services/Akbank.API/Akbank.API.csproj
+dotnet run --project src/Services/Ziraat.API/Ziraat.API.csproj

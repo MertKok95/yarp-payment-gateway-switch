@@ -1,0 +1,24 @@
+name: .NET 10 Enterprise Payment Gateway CI
+
+on:
+  push:
+    branches: [ "Master" ]
+  pull_request:
+    branches: [ "Master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore PaymentSwitch.sln
+      
+    - name: Build Solution
+      run: dotnet build PaymentSwitch.sln --no-restore --configuration Release

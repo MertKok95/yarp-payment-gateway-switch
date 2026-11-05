@@ -1,0 +1,6 @@
+@Ziraat.API_HostAddress = http://localhost:5026
+
+GET {{Ziraat.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
